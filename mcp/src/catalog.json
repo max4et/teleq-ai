@@ -1,0 +1,626 @@
+{
+  "initialize": {
+    "capabilities": {
+      "tools": {
+        "listChanged": false
+      },
+      "prompts": {
+        "listChanged": false
+      }
+    },
+    "serverInfo": {
+      "name": "teleq-tv",
+      "title": "TeleQ TV",
+      "version": "catalog"
+    },
+    "instructions": "This server controls one TV in the user's home through the TeleQ app. Put content up with show_text, show_slides, show_html, show_image, show_queue and play_video; every show_* call returns an id that update_text / update_html / slides_control use. Design for a 10-foot screen: 16:9, dark background, light text, at least 28 px body text and 48 px headings at 1080p, at most about 6 lines or bullets per screen, no scrolling, nothing interactive, keep 5% margins (TV overscan) and leave the top-right corner free for the TeleQ badge. After showing something important, call screen_snapshot to see what the TV really shows and fix overflow or tiny text with update_html or by showing it again. Video frames may appear black in snapshots. For presentations use show_slides (one idea per slide, speaker notes in notes) and slides_control to move; the viewer can also use ←/→ on the remote. For live boards (scores, timers, progress) show_html once and push new values with update_html data; the page receives them as window \"message\" events with {type:\"teleq:update\", data}. Pages have no network access: inline everything. Use notify for a short heads-up without interrupting what is playing; it is limited to one every 10 s. Call tv_status first if unsure what is on screen; its capabilities list says which tools this TV supports (older TVs may lack some: ask the user to update TeleQ). The user sees on the TV which assistant put content up and can stop it with Back on the remote. Don't show anything the user didn't ask for."
+  },
+  "tools": {
+    "tools": [
+      {
+        "name": "tv_status",
+        "title": "TV status",
+        "description": "Check what the TV is showing right now (and its id, slide or queue position), whether a phone is also connected, the screen size and safe area, and which tools this TV supports (capabilities). Call this before changing the screen if you are unsure what is on it.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Checking the TV…",
+          "openai/toolInvocation/invoked": "Checked the TV"
+        },
+        "annotations": {
+          "title": "TV status",
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "show_text",
+        "title": "Show text on the TV",
+        "description": "Show a large, readable text card on the TV: a recipe, a list, a summary, an answer. Keep it short; people read it from the couch. Markdown subset: # headings, **bold**, - bullet lists, 1. numbered lists, blank lines between paragraphs. Returns an id for update_text.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "markdown": {
+              "type": "string",
+              "description": "The text to show (Markdown subset). Up to 20000 characters."
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional heading shown above the text (up to 120 characters)."
+            },
+            "duration_s": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3600,
+              "description": "Optional: clear the screen after this many seconds (1-3600). Without it the content stays until replaced or stopped."
+            }
+          },
+          "required": [
+            "markdown"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Putting the text on the TV…",
+          "openai/toolInvocation/invoked": "Text is on the TV"
+        },
+        "annotations": {
+          "title": "Show text on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "show_slides",
+        "title": "Present slides on the TV",
+        "description": "Show a presentation: a list of slides, each either Markdown (rendered as a big, centred TV slide) or a complete self-contained HTML page (sandboxed, no network). The viewer moves with ←/→ on the remote; you move with slides_control. Put what you would say in notes (not shown on the TV; returned by slides_control). Up to 50 slides and 1024 KB in total. Returns an id.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "slides": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 50,
+              "description": "The slides in order. Each needs markdown or html (not both).",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "markdown": {
+                    "type": "string",
+                    "description": "Slide content in the Markdown subset (# heading, - bullets, **bold**). Aim for a heading and at most 5 short bullets."
+                  },
+                  "html": {
+                    "type": "string",
+                    "description": "A complete HTML document for this slide, designed for 1920x1080, dark background, no scrolling."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Optional slide title, used in status and the slide counter."
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional speaker notes (up to 4000 characters), never shown on the TV."
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional presentation title (up to 120 characters)."
+            },
+            "start_slide": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Optional slide to open first (1-based). Default 1."
+            }
+          },
+          "required": [
+            "slides"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Putting the slides on the TV…",
+          "openai/toolInvocation/invoked": "Slides are on the TV"
+        },
+        "annotations": {
+          "title": "Present slides on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "slides_control",
+        "title": "Move through the slides",
+        "description": "Go to the next, previous, first, last or a given slide of the presentation on screen. Returns the slide number, the count and that slide's notes.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "next",
+                "prev",
+                "first",
+                "last",
+                "goto"
+              ],
+              "description": "Where to go."
+            },
+            "slide": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Slide number (1-based). Required for \"goto\"."
+            },
+            "id": {
+              "type": "string",
+              "description": "Optional: the id from show_slides, to make sure the right presentation is still on screen."
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Changing the slide…",
+          "openai/toolInvocation/invoked": "Slide changed"
+        },
+        "annotations": {
+          "title": "Move through the slides",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "show_html",
+        "title": "Show an HTML page on the TV",
+        "description": "Show a self-contained HTML page (a dashboard, a chart, a scoreboard, a timer, a visual) full screen on the TV. It runs in a locked-down sandbox: scripts and CSS work, but there is no network access, so inline everything; images may be data: URIs or https:// URLs. Design for 1920x1080, large type, dark background, no scrolling, no input. To change values later without reloading, listen for window \"message\" events whose data is {type:\"teleq:update\", data} and call update_html. Returns an id.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "html": {
+              "type": "string",
+              "description": "A complete HTML document. Up to 262144 characters."
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional title (not drawn; used in the status) (up to 120 characters)."
+            },
+            "duration_s": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3600,
+              "description": "Optional: clear the screen after this many seconds (1-3600). Without it the content stays until replaced or stopped."
+            }
+          },
+          "required": [
+            "html"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Putting the page on the TV…",
+          "openai/toolInvocation/invoked": "Page is on the TV"
+        },
+        "annotations": {
+          "title": "Show an HTML page on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "update_text",
+        "title": "Update the text on the TV",
+        "description": "Replace the text of a card shown with show_text, in place and without flicker. Only works while that card is still on screen.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id returned by the show_* call that put the content up."
+            },
+            "markdown": {
+              "type": "string",
+              "description": "The new text (Markdown subset). Up to 20000 characters."
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional new heading (up to 120 characters)."
+            }
+          },
+          "required": [
+            "id",
+            "markdown"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Updating the TV…",
+          "openai/toolInvocation/invoked": "TV updated"
+        },
+        "annotations": {
+          "title": "Update the text on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "update_html",
+        "title": "Update the page on the TV",
+        "description": "Update a page shown with show_html. With data, the page stays and receives a window \"message\" event {type:\"teleq:update\", data} (no reload, no flicker; up to 64 KB of JSON). With html, the page is replaced (a short reload). Only works while that page is still on screen.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The id returned by the show_* call that put the content up."
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "New values for the page, delivered as message event data."
+            },
+            "html": {
+              "type": "string",
+              "description": "Optional replacement HTML document (up to 262144 characters)."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Updating the TV…",
+          "openai/toolInvocation/invoked": "TV updated"
+        },
+        "annotations": {
+          "title": "Update the page on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "show_image",
+        "title": "Show an image on the TV",
+        "description": "Show a picture on the TV, letterboxed on a black background. The image must be reachable on the public internet over https://.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public https:// URL of a JPEG, PNG, WebP or GIF image."
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional caption (up to 120 characters)."
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Showing the picture on the TV…",
+          "openai/toolInvocation/invoked": "Picture sent to the TV"
+        },
+        "annotations": {
+          "title": "Show an image on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      },
+      {
+        "name": "show_queue",
+        "title": "Show several photos and videos",
+        "description": "Show up to 50 photos and videos one after another: each photo stays for its duration_s (default 8 s), each video plays to the end. The viewer can skip with ←/→ on the remote. Public https:// links only. Returns an id.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 50,
+              "description": "The photos and videos in order.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public https:// URL of an image or a video (file, HLS or DASH)."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "video"
+                    ],
+                    "description": "Optional; guessed from the link when missing."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Optional caption."
+                  },
+                  "duration_s": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "description": "Photos only: seconds on screen (default 8)."
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Showing the pictures on the TV…",
+          "openai/toolInvocation/invoked": "Pictures sent to the TV"
+        },
+        "annotations": {
+          "title": "Show several photos and videos",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      },
+      {
+        "name": "play_video",
+        "title": "Play a video on the TV",
+        "description": "Play a video on the TV in full screen. Works with direct video files (.mp4, .webm, .mkv) and HLS (.m3u8) or DASH (.mpd) streams over public https://. YouTube and DRM-protected services are not supported. Use `playback` afterwards to pause, resume or seek.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public https:// URL of the video file or stream."
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional title shown on the TV (up to 120 characters)."
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Starting the video on the TV…",
+          "openai/toolInvocation/invoked": "Video sent to the TV"
+        },
+        "annotations": {
+          "title": "Play a video on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      },
+      {
+        "name": "notify",
+        "title": "Show a short notice on the TV",
+        "description": "Show a short notice for a few seconds on top of whatever is on screen, without interrupting a video. Up to 200 characters, at most one every 10 seconds.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The notice (up to 200 characters)."
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Sending a notice to the TV…",
+          "openai/toolInvocation/invoked": "Notice shown"
+        },
+        "annotations": {
+          "title": "Show a short notice on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "screen_snapshot",
+        "title": "See the TV screen",
+        "description": "Get a picture (at most 1280 px wide) of what TeleQ is showing right now, to check that your content fits and looks right. Only TeleQ's own content an assistant put up is captured, never other apps or the user's own photos; video frames may come out black.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Looking at the TV screen…",
+          "openai/toolInvocation/invoked": "Looked at the TV"
+        },
+        "annotations": {
+          "title": "See the TV screen",
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "playback",
+        "title": "Control video playback",
+        "description": "Control the video that is playing on the TV: play, pause, seek to a position, or stop.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "play",
+                "pause",
+                "seek",
+                "stop"
+              ],
+              "description": "What to do."
+            },
+            "position_s": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400,
+              "description": "Seconds from the start. Required when action is \"seek\"."
+            }
+          },
+          "required": [
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Controlling the video…",
+          "openai/toolInvocation/invoked": "Done"
+        },
+        "annotations": {
+          "title": "Control video playback",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      },
+      {
+        "name": "clear_screen",
+        "title": "Clear the TV screen",
+        "description": "Stop whatever is being shown and return the TV to its idle screen.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Clearing the TV…",
+          "openai/toolInvocation/invoked": "TV cleared"
+        },
+        "annotations": {
+          "title": "Clear the TV screen",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      }
+    ]
+  },
+  "prompts": {
+    "prompts": [
+      {
+        "name": "present_topic",
+        "title": "Present a topic on the TV",
+        "description": "Prepare a short slide presentation about a topic and present it on the TV.",
+        "arguments": [
+          {
+            "name": "topic",
+            "description": "What the presentation is about.",
+            "required": true
+          },
+          {
+            "name": "slides",
+            "description": "How many slides (default 6).",
+            "required": false
+          },
+          {
+            "name": "audience",
+            "description": "Who is watching (default: a general audience).",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "daily_brief",
+        "title": "Daily brief on the TV",
+        "description": "A one-screen morning brief (date, weather, agenda, one fun fact) as a TV dashboard.",
+        "arguments": [
+          {
+            "name": "city",
+            "description": "City for the weather (default: ask me).",
+            "required": false
+          },
+          {
+            "name": "agenda",
+            "description": "Things on my plate today, if you don't know them already.",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "show_recipe_steps",
+        "title": "Recipe step by step",
+        "description": "Show a recipe on the TV as slides: ingredients first, then one step per slide.",
+        "arguments": [
+          {
+            "name": "dish",
+            "description": "What to cook.",
+            "required": true
+          },
+          {
+            "name": "servings",
+            "description": "How many people (default 4).",
+            "required": false
+          }
+        ]
+      },
+      {
+        "name": "kids_quiz",
+        "title": "Quiz for kids on the TV",
+        "description": "A friendly quiz on the TV with a live scoreboard.",
+        "arguments": [
+          {
+            "name": "topic",
+            "description": "Quiz topic.",
+            "required": true
+          },
+          {
+            "name": "age",
+            "description": "Age of the players (default 8).",
+            "required": false
+          },
+          {
+            "name": "questions",
+            "description": "Number of questions (default 8).",
+            "required": false
+          }
+        ]
+      }
+    ]
+  }
+}

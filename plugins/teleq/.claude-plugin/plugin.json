@@ -1,0 +1,20 @@
+{
+  "name": "teleq",
+  "version": "1.1.1",
+  "description": "Show text, slides, pictures, video and live HTML dashboards on your TV with TeleQ, and see what it shows.",
+  "author": {
+    "name": "TeleQ",
+    "email": "support@teleq.online",
+    "url": "https://teleq.online"
+  },
+  "homepage": "https://teleq.online/ai/",
+  "repository": "https://github.com/max4et/teleq-ai",
+  "license": "MIT",
+  "keywords": [
+    "tv",
+    "android-tv",
+    "presentation",
+    "slides",
+    "mcp"
+  ]
+}

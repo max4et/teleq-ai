@@ -1,0 +1,27 @@
+{
+  "name": "teleq",
+  "owner": {
+    "name": "TeleQ",
+    "email": "support@teleq.online"
+  },
+  "metadata": {
+    "description": "TeleQ: let Claude put things on your TV."
+  },
+  "plugins": [
+    {
+      "name": "teleq",
+      "source": "./plugins/teleq",
+      "description": "Show text, slides, pictures, video and live HTML dashboards on your TV with TeleQ, and see what it shows.",
+      "version": "1.1.1",
+      "homepage": "https://teleq.online/ai/",
+      "category": "productivity",
+      "keywords": [
+        "tv",
+        "android-tv",
+        "presentation",
+        "slides",
+        "mcp"
+      ]
+    }
+  ]
+}

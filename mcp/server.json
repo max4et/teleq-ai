@@ -1,0 +1,46 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.max4et/teleq",
+  "title": "TeleQ TV",
+  "description": "Show text, slides, images, video and live HTML pages on your TV through the TeleQ app.",
+  "version": "1.1.1",
+  "websiteUrl": "https://teleq.online/ai/",
+  "repository": {
+    "url": "https://github.com/max4et/teleq-ai",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "icons": [
+    {
+      "src": "https://teleq.online/icon-192.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "192x192"
+      ]
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "teleq-mcp",
+      "version": "1.1.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TELEQ_TV_HOST",
+          "description": "Optional: the TV's address on the home network, when several TVs are found.",
+          "isRequired": false
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://relay.teleq.online/mcp"
+    }
+  ]
+}

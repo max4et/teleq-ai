@@ -1,0 +1,16 @@
+{
+  "name": "teleq-mcp",
+  "version": "1.1.1",
+  "description": "Let Claude (or any MCP client) show text, slides, images, video and web pages on your TV through the TeleQ app, over your home network.",
+  "mcpName": "io.github.max4et/teleq",
+  "type": "module",
+  "bin": { "teleq-mcp": "bin/teleq-mcp.mjs" },
+  "files": ["bin", "src", "README.md", "LICENSE"],
+  "engines": { "node": ">=18.17" },
+  "scripts": { "test": "node --test test/*.test.mjs", "pack:mcpb": "node scripts/pack-mcpb.mjs" },
+  "repository": { "type": "git", "url": "git+https://github.com/max4et/teleq-ai.git", "directory": "mcp" },
+  "homepage": "https://teleq.online/ai/",
+  "bugs": { "url": "https://github.com/max4et/teleq-ai/issues", "email": "support@teleq.online" },
+  "keywords": ["mcp", "mcp-server", "model-context-protocol", "tv", "android-tv", "claude", "chatgpt", "teleq", "presentation", "smart-tv"],
+  "license": "MIT"
+}

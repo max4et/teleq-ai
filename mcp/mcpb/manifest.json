@@ -1,0 +1,164 @@
+{
+  "manifest_version": "0.3",
+  "name": "teleq",
+  "display_name": "TeleQ TV",
+  "version": "1.1.1",
+  "description": "Show text, slides, pictures, video and live HTML dashboards on your TV with TeleQ, and see what it shows.",
+  "long_description": "Claude puts slides, recipes, scoreboards, dashboards, photos and video on your Android TV through the TeleQ app, checks how they look with a snapshot and fixes them. Works over your home Wi-Fi: nothing goes through a cloud service. On first use Claude asks for the 9-digit code that TeleQ shows on the TV (Linked devices → Link an assistant). Back on the remote always stops what an assistant shows.",
+  "author": {
+    "name": "TeleQ",
+    "email": "support@teleq.online",
+    "url": "https://teleq.online"
+  },
+  "homepage": "https://teleq.online/ai/",
+  "documentation": "https://github.com/max4et/teleq-ai/tree/main/mcp#readme",
+  "support": "mailto:support@teleq.online",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/bin/teleq-mcp.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/bin/teleq-mcp.mjs"
+      ],
+      "env": {
+        "TELEQ_TV_HOST": "${user_config.tv_address}",
+        "TELEQ_CLIENT_NAME": "Claude Desktop"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "tv_status",
+      "description": "Check what the TV is showing right now (and its id, slide or queue position), whether a phone is also connected, the screen size and safe area, and which tools this TV supports (capabilities)."
+    },
+    {
+      "name": "show_text",
+      "description": "Show a large, readable text card on the TV: a recipe, a list, a summary, an answer."
+    },
+    {
+      "name": "show_slides",
+      "description": "Show a presentation: a list of slides, each either Markdown (rendered as a big, centred TV slide) or a complete self-contained HTML page (sandboxed, no network)."
+    },
+    {
+      "name": "slides_control",
+      "description": "Go to the next, previous, first, last or a given slide of the presentation on screen."
+    },
+    {
+      "name": "show_html",
+      "description": "Show a self-contained HTML page (a dashboard, a chart, a scoreboard, a timer, a visual) full screen on the TV."
+    },
+    {
+      "name": "update_text",
+      "description": "Replace the text of a card shown with show_text, in place and without flicker."
+    },
+    {
+      "name": "update_html",
+      "description": "Update a page shown with show_html."
+    },
+    {
+      "name": "show_image",
+      "description": "Show a picture on the TV, letterboxed on a black background."
+    },
+    {
+      "name": "show_queue",
+      "description": "Show up to 50 photos and videos one after another: each photo stays for its duration_s (default 8 s), each video plays to the end."
+    },
+    {
+      "name": "play_video",
+      "description": "Play a video on the TV in full screen."
+    },
+    {
+      "name": "notify",
+      "description": "Show a short notice for a few seconds on top of whatever is on screen, without interrupting a video."
+    },
+    {
+      "name": "screen_snapshot",
+      "description": "Get a picture (at most 1280 px wide) of what TeleQ is showing right now, to check that your content fits and looks right."
+    },
+    {
+      "name": "playback",
+      "description": "Control the video that is playing on the TV: play, pause, seek to a position, or stop."
+    },
+    {
+      "name": "clear_screen",
+      "description": "Stop whatever is being shown and return the TV to its idle screen."
+    },
+    {
+      "name": "link_tv",
+      "description": "Link this computer with a TV using the code TeleQ shows."
+    }
+  ],
+  "prompts": [
+    {
+      "name": "present_topic",
+      "description": "Prepare a short slide presentation about a topic and present it on the TV.",
+      "arguments": [
+        "topic",
+        "slides",
+        "audience"
+      ],
+      "text": "Prepare a presentation about \"${arguments.topic}\" for a general audience with about 6 slides and show it on the TV with show_slides: a title slide, one idea per slide, at most 5 short bullets each, speaker notes with what to say. Then call screen_snapshot on the first slide, fix anything that overflows or is too small, and tell me the id so we can step through it with slides_control."
+    },
+    {
+      "name": "daily_brief",
+      "description": "A one-screen morning brief (date, weather, agenda, one fun fact) as a TV dashboard.",
+      "arguments": [
+        "city",
+        "agenda"
+      ],
+      "text": "Make a one-screen daily brief for the TV with show_html: today's date, the weather for my city (ask me if you do not know it) if you can look it up, my agenda (whatever you know about my day) and one short fun fact. Dark 16:9 layout, large type, everything inside 5% margins, no scrolling. Check it with screen_snapshot and fix what does not fit."
+    },
+    {
+      "name": "show_recipe_steps",
+      "description": "Show a recipe on the TV as slides: ingredients first, then one step per slide.",
+      "arguments": [
+        "dish",
+        "servings"
+      ],
+      "text": "Show a recipe for ${arguments.dish} for 4 people on the TV with show_slides: first an ingredients slide, then one numbered step per slide with large text and timings in bold. Keep tips in the notes. Check the first slide with screen_snapshot; I will say \"next\" while cooking and you move with slides_control."
+    },
+    {
+      "name": "kids_quiz",
+      "description": "A friendly quiz on the TV with a live scoreboard.",
+      "arguments": [
+        "topic",
+        "age",
+        "questions"
+      ],
+      "text": "Run a 8-question quiz about ${arguments.topic} for 8-year-olds on the TV. Use show_slides with one colourful question per slide (big text, 3 answer options labelled A, B, C, answers in the notes, not on screen). When I tell you who answered, show the score with show_html once and keep it current with update_html data. Be encouraging."
+    }
+  ],
+  "keywords": [
+    "tv",
+    "android tv",
+    "presentation",
+    "slides",
+    "dashboard",
+    "teleq"
+  ],
+  "license": "MIT",
+  "privacy_policies": [
+    "https://teleq.online/privacy/"
+  ],
+  "user_config": {
+    "tv_address": {
+      "type": "string",
+      "title": "TV address (optional)",
+      "description": "Only if several TVs are on your network: the TV's address, like 192.168.1.20 (TeleQ shows it under the QR code).",
+      "required": false,
+      "default": ""
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.17.0"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "teleq",
+  "version": "1.1.1",
+  "description": "Show text, slides, pictures, video and live HTML dashboards on your TV with TeleQ, and see what it shows.",
+  "mcpServers": {
+    "teleq": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "teleq-mcp"
+      ]
+    }
+  },
+  "contextFileName": "GEMINI.md"
+}

@@ -1,0 +1,4 @@
+node_modules/
+.DS_Store
+mcp/mcpb/build/
+mcp/mcpb/*.mcpb
