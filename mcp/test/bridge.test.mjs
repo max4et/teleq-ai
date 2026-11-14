@@ -148,7 +148,7 @@ test('never reached a TV: the bundled catalog answers initialize, tools/list and
   assert.equal(init.result.protocolVersion, '2025-06-18');
   assert.match(init.result.instructions, /screen_snapshot/);
   const tools = JSON.parse(await dead('{"jsonrpc":"2.0","id":2,"method":"tools/list"}')).result.tools.map((t) => t.name);
-  assert.ok(tools.includes('show_slides') && tools.includes('screen_snapshot') && tools.length === 14);
+  assert.ok(tools.includes('show_slides') && tools.includes('screen_snapshot') && tools.includes('open_in_app') && tools.length === 15);
   const prompts = JSON.parse(await dead('{"jsonrpc":"2.0","id":3,"method":"prompts/list"}')).result.prompts;
   assert.equal(prompts.length, 4);
 });

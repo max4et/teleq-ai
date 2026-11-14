@@ -3,7 +3,7 @@
   "name": "io.github.max4et/teleq",
   "title": "TeleQ TV",
   "description": "Show text, slides, images, video and live HTML pages on your TV through the TeleQ app.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "websiteUrl": "https://teleq.online/ai/",
   "repository": {
     "url": "https://github.com/max4et/teleq-ai",
@@ -23,7 +23,7 @@
     {
       "registryType": "npm",
       "identifier": "teleq-mcp",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

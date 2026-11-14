@@ -13,14 +13,14 @@
       "title": "TeleQ TV",
       "version": "catalog"
     },
-    "instructions": "This server controls one TV in the user's home through the TeleQ app. Put content up with show_text, show_slides, show_html, show_image, show_queue and play_video; every show_* call returns an id that update_text / update_html / slides_control use. Design for a 10-foot screen: 16:9, dark background, light text, at least 28 px body text and 48 px headings at 1080p, at most about 6 lines or bullets per screen, no scrolling, nothing interactive, keep 5% margins (TV overscan) and leave the top-right corner free for the TeleQ badge. After showing something important, call screen_snapshot to see what the TV really shows and fix overflow or tiny text with update_html or by showing it again. Video frames may appear black in snapshots. For presentations use show_slides (one idea per slide, speaker notes in notes) and slides_control to move; the viewer can also use ←/→ on the remote. For live boards (scores, timers, progress) show_html once and push new values with update_html data; the page receives them as window \"message\" events with {type:\"teleq:update\", data}. Pages have no network access: inline everything. Use notify for a short heads-up without interrupting what is playing; it is limited to one every 10 s. Call tv_status first if unsure what is on screen; its capabilities list says which tools this TV supports (older TVs may lack some: ask the user to update TeleQ). The user sees on the TV which assistant put content up and can stop it with Back on the remote. Don't show anything the user didn't ask for."
+    "instructions": "This server controls one TV in the user's home through the TeleQ app. Put content up with show_text, show_slides, show_html, show_image, show_queue and play_video; every show_* call returns an id that update_text / update_html / slides_control use. Design for a 10-foot screen: 16:9, dark background, light text, at least 28 px body text and 48 px headings at 1080p, at most about 6 lines or bullets per screen, no scrolling, nothing interactive, keep 5% margins (TV overscan) and leave the top-right corner free for the TeleQ badge. After showing something important, call screen_snapshot to see what the TV really shows and fix overflow or tiny text with update_html or by showing it again. Video frames may appear black in snapshots. For presentations use show_slides (one idea per slide, speaker notes in notes) and slides_control to move; the viewer can also use ←/→ on the remote. For live boards (scores, timers, progress) show_html once and push new values with update_html data; the page receives them as window \"message\" events with {type:\"teleq:update\", data}. Pages have no network access: inline everything. To find and play something (an episode, a cartoon, a film, music): read tv_status language and country, search the web in that language unless the user named another, pick an official source (the official YouTube, Rutube or VK Video channel, or a streaming service available there; prefer ones in services_installed) and call open_in_app with its link. Never use pirate copies; if only a paid service has it, open its page and say a subscription may be needed. Direct video files (.mp4, .m3u8, .mpd) go to play_video. Use notify for a short heads-up without interrupting what is playing; it is limited to one every 10 s. Call tv_status first if unsure what is on screen; its capabilities list says which tools this TV supports (older TVs may lack some: ask the user to update TeleQ). The user sees on the TV which assistant put content up and can stop it with Back on the remote. Don't show anything the user didn't ask for."
   },
   "tools": {
     "tools": [
       {
         "name": "tv_status",
         "title": "TV status",
-        "description": "Check what the TV is showing right now (and its id, slide or queue position), whether a phone is also connected, the screen size and safe area, and which tools this TV supports (capabilities). Call this before changing the screen if you are unsure what is on it.",
+        "description": "Check what the TV is showing right now (and its id, slide or queue position), whether a phone is also connected, the screen size and safe area, which tools this TV supports (capabilities), the language and country of the TV (search for content in that language) and which video services have their app on it (services_installed). Call this before changing the screen if you are unsure what is on it.",
         "inputSchema": {
           "type": "object",
           "properties": {},
@@ -398,7 +398,7 @@
       {
         "name": "play_video",
         "title": "Play a video on the TV",
-        "description": "Play a video on the TV in full screen. Works with direct video files (.mp4, .webm, .mkv) and HLS (.m3u8) or DASH (.mpd) streams over public https://. YouTube and DRM-protected services are not supported. Use `playback` afterwards to pause, resume or seek.",
+        "description": "Play a video on the TV in full screen inside TeleQ. Works with direct video files (.mp4, .webm, .mkv) and HLS (.m3u8) or DASH (.mpd) streams over public https://. For YouTube, Rutube, VK Video, Netflix and other services use open_in_app instead. Use `playback` afterwards to pause, resume or seek.",
         "inputSchema": {
           "type": "object",
           "properties": {
@@ -422,6 +422,45 @@
         },
         "annotations": {
           "title": "Play a video on the TV",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      },
+      {
+        "name": "open_in_app",
+        "title": "Open a video service on the TV",
+        "description": "Open an episode, a cartoon, a film, a music video or a channel in the TV's own app for that service: YouTube, YouTube Kids, Rutube, VK Video, Kinopoisk, ivi, Okko, Wink, START, PREMIER, KION, more.tv, Smotrim, MEGOGO, Netflix, Prime Video, Disney+, Max, Apple TV, Twitch, Vimeo, Dailymotion, Crunchyroll, Pluto TV, Tubi. Find the official link with web search first (in the TV's language, see tv_status). The service's app then plays it (TeleQ leaves the screen; the user returns with Back/Home). Official sources only.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "https:// link to the video, episode, series, playlist or channel page on one of the listed services (e.g. https://www.youtube.com/watch?v=…, https://rutube.ru/video/…/)."
+            },
+            "title": {
+              "type": "string",
+              "description": "Optional title, for the notice on the TV (up to 120 characters)."
+            },
+            "start_s": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 86400,
+              "description": "Optional (YouTube): start this many seconds in."
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        "_meta": {
+          "openai/toolInvocation/invoking": "Opening it on the TV…",
+          "openai/toolInvocation/invoked": "Opened on the TV"
+        },
+        "annotations": {
+          "title": "Open a video service on the TV",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,

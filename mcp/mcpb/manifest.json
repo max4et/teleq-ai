@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "teleq",
   "display_name": "TeleQ TV",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Show text, slides, pictures, video and live HTML dashboards on your TV with TeleQ, and see what it shows.",
   "long_description": "Claude puts slides, recipes, scoreboards, dashboards, photos and video on your Android TV through the TeleQ app, checks how they look with a snapshot and fixes them. Works over your home Wi-Fi: nothing goes through a cloud service. On first use Claude asks for the 9-digit code that TeleQ shows on the TV (Linked devices → Link an assistant). Back on the remote always stops what an assistant shows.",
   "author": {
@@ -31,7 +31,7 @@
   "tools": [
     {
       "name": "tv_status",
-      "description": "Check what the TV is showing right now (and its id, slide or queue position), whether a phone is also connected, the screen size and safe area, and which tools this TV supports (capabilities)."
+      "description": "Check what the TV is showing right now (and its id, slide or queue position), whether a phone is also connected, the screen size and safe area, which tools this TV supports (capabilities), the language and country of the TV (search for content in that language) and which video services have their app on it (services_installed)."
     },
     {
       "name": "show_text",
@@ -67,7 +67,11 @@
     },
     {
       "name": "play_video",
-      "description": "Play a video on the TV in full screen."
+      "description": "Play a video on the TV in full screen inside TeleQ."
+    },
+    {
+      "name": "open_in_app",
+      "description": "Open an episode, a cartoon, a film, a music video or a channel in the TV's own app for that service: YouTube, YouTube Kids, Rutube, VK Video, Kinopoisk, ivi, Okko, Wink, START, PREMIER, KION, more.tv, Smotrim, MEGOGO, Netflix, Prime Video, Disney+, Max, Apple TV, Twitch, Vimeo, Dailymotion, Crunchyroll, Pluto TV, Tubi."
     },
     {
       "name": "notify",

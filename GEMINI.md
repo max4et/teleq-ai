@@ -21,12 +21,33 @@ use. The `teleq` MCP server gives you the tools; this guide is how to use them w
 | Presentation, recipe steps, quiz | `show_slides` (one idea per slide; speaker notes in `notes`), then `slides_control` |
 | Dashboard, chart, scoreboard, timer, anything visual | `show_html` (self-contained, no network), then `update_html` with `data` |
 | A picture or several | `show_image` / `show_queue` (public `https://` links only) |
-| A video or stream | `play_video` (direct file, HLS or DASH; no YouTube, no DRM), then `playback` |
+| An episode, cartoon, film, music video or channel on YouTube, Rutube, VK Video, Kinopoisk, Netflix… | web search for the official link, then `open_in_app` |
+| A direct video file or stream (`.mp4`, `.m3u8`, `.mpd`) | `play_video`, then `playback` |
 | A heads-up over whatever is on | `notify` (≤200 characters, at most one every 10 s) |
 | Check what is really on screen | `screen_snapshot` |
 | Several TVs | `list_tvs`, then pass `tv` (name or id) to any tool |
 
 Every `show_*` returns an `id`; `update_text`, `update_html` and `slides_control` use it.
+
+## Find and play
+
+When the user asks to "find and play" something (a cartoon episode, a film, a song, a channel):
+
+1. `tv_status` → `language`, `country`, `services_installed`.
+2. Search the web **in that language** (unless the user named another): the series name in that language,
+   season and episode, plus the service, e.g. `Дикие Скричеры 1 сезон 1 серия смотреть официально` or
+   `site:rutube.ru`, `site:youtube.com`, `site:vkvideo.ru`.
+3. Pick an **official** source: the rights holder's channel on YouTube / Rutube / VK Video, or a streaming
+   service available in that country. Prefer services in `services_installed`. Check the episode number
+   and the language/dub in the title before opening it.
+4. `open_in_app` with that link. The service's app takes over the screen; tell the user what you opened.
+5. Free official upload not found? Open the series page on a service that has it (Kinopoisk, ivi, Okko,
+   Netflix…) and say a subscription may be needed. Nothing official at all? Say so; suggest the official
+   channel or a similar title.
+
+Never use pirate sites or unofficial re-uploads, even if the user asks: TeleQ only opens the services it
+knows, and this guide is about getting the right thing on screen legally. A direct `.mp4`/`.m3u8` link the
+user gives you goes to `play_video`.
 
 ## Design for a 10-foot screen
 
